@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for changelog
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Get version from tag
+      id: version
+      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm run build
+      env:
+        NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
+
+    - name: Build Backend
+      working-directory: ./backend
+      run: |
+        npm ci
+        npm run build
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        echo "## 🚀 What's New in v${{ steps.version.outputs.version }}" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### ✨ Features & Improvements" >> CHANGELOG.md
+        git log --pretty=format:"- %s" --grep="feat:" --grep="feature:" --since="$(git describe --tags --abbrev=0 HEAD^)..HEAD" >> CHANGELOG.md || echo "- Initial release" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### 🐛 Bug Fixes" >> CHANGELOG.md  
+        git log --pretty=format:"- %s" --grep="fix:" --grep="bug:" --since="$(git describe --tags --abbrev=0 HEAD^)..HEAD" >> CHANGELOG.md || echo "- No bug fixes in this release" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### 🔧 Technical Changes" >> CHANGELOG.md
+        git log --pretty=format:"- %s" --grep="chore:" --grep="refactor:" --since="$(git describe --tags --abbrev=0 HEAD^)..HEAD" >> CHANGELOG.md || echo "- No technical changes in this release" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "### 🌐 Deployment" >> CHANGELOG.md
+        echo "- Frontend: https://transport-planner-ruddy.vercel.app" >> CHANGELOG.md
+        echo "- Backend API: https://transport-planner-production.up.railway.app" >> CHANGELOG.md
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Transport Planner v${{ steps.version.outputs.version }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: false
+
+    - name: Deploy notification
+      run: |
+        echo "🎉 Release v${{ steps.version.outputs.version }} created!"
+        echo "🔗 Frontend: https://transport-planner-ruddy.vercel.app"  
+        echo "🔗 Backend: https://transport-planner-production.up.railway.app"

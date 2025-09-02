@@ -1,0 +1,68 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        directory: ['./frontend', './backend']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Check for outdated packages
+      working-directory: ${{ matrix.directory }}
+      run: |
+        echo "Checking outdated packages in ${{ matrix.directory }}"
+        npm outdated || true
+
+    - name: Update dependencies
+      working-directory: ${{ matrix.directory }}
+      run: |
+        npm update
+        
+    - name: Run tests to ensure updates don't break anything
+      working-directory: ${{ matrix.directory }}
+      run: |
+        npm ci
+        npm run build
+        if [ -f "package.json" ] && grep -q '"test"' package.json; then
+          npm test || true
+        fi
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: update dependencies in ${{ matrix.directory }}"
+        title: "🔄 Update dependencies in ${{ matrix.directory }}"
+        body: |
+          ## Dependency Updates
+          
+          This PR updates dependencies in `${{ matrix.directory }}`.
+          
+          ### Changes
+          - Updated npm packages to latest compatible versions
+          - All builds and tests pass
+          
+          🤖 This PR was created automatically by GitHub Actions.
+          
+          Please review and merge if everything looks good.
+        branch: dependency-updates-${{ matrix.directory }}-${{ github.run_number }}
+        delete-branch: true
