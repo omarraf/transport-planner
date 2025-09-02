@@ -20,8 +20,8 @@ export const transportModes: Record<TransportModeId, TransportMode> = {
     mapboxProfile: 'mapbox/cycling',
     color: '#3b82f6',
     icon: '🚴',
-    emissionsFactor: 0.021, // includes manufacturing/maintenance impact
-    costFactor: 0.05, // maintenance, equipment depreciation
+    emissionsFactor: 0, // zero direct emissions
+    costFactor: 0, // zero direct cost
     caloriesFactor: 35 // calories per km
   },
   driving: {

@@ -186,6 +186,24 @@ export default function TransportPlanner() {
     return `${minutes}m`
   }
 
+  const generateGoogleMapsUrl = (startLoc: Location, endLoc: Location, mode: string) => {
+    const baseUrl = 'https://www.google.com/maps/dir/'
+    const origin = `${startLoc.lat},${startLoc.lng}`
+    const destination = `${endLoc.lat},${endLoc.lng}`
+    
+    // Map our transport modes to Google Maps travel modes
+    const travelMode = mode === 'walking' ? 'walking' 
+                    : mode === 'cycling' ? 'bicycling'
+                    : mode === 'driving' ? 'driving' 
+                    : 'transit' // fallback for other modes
+    
+    return `${baseUrl}${origin}/${destination}/@${startLoc.lat},${startLoc.lng},12z/data=!3m1!4b1!4m2!4m1!3e${
+      travelMode === 'walking' ? '2' : 
+      travelMode === 'bicycling' ? '1' : 
+      travelMode === 'driving' ? '0' : '3'
+    }`
+  }
+
   const bestRoute = routes.find(r => r.success && r.route)
   const successfulRoutes = routes.filter(r => r.success && r.route)
 
@@ -266,10 +284,21 @@ export default function TransportPlanner() {
                 {routes.map((routeData) => (
                   <Card key={routeData.mode.id} className={`${routeData.success ? '' : 'opacity-50'}`}>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <span>{routeData.mode.icon}</span>
-                        <span>{routeData.mode.name}</span>
-          
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span>{routeData.mode.icon}</span>
+                          <span>{routeData.mode.name}</span>
+                        </div>
+                        {routeData.success && startLocation && endLocation && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(generateGoogleMapsUrl(startLocation, endLocation, routeData.mode.id), '_blank')}
+                            className="text-xs"
+                          >
+                            Open in Google Maps
+                          </Button>
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

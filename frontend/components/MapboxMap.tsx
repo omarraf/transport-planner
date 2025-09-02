@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 // Set your Mapbox access token
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+console.log("Mapbox Token:", process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? 'Available' : 'Not Set');
 export interface Location {
   lat: number;
   lng: number;
@@ -57,7 +57,7 @@ export default function MapboxMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -79,19 +79,13 @@ export default function MapboxMap({
       setMapLoaded(true);
     });
 
-    // Handle map clicks
-    if (onMapClick) {
-      map.current.on('click', (e) => {
-        onMapClick([e.lngLat.lng, e.lngLat.lat]);
-      });
-    }
-
     return () => {
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
-  }, [onMapClick]);
+  }, []);
 
   // Update start location marker
   useEffect(() => {
