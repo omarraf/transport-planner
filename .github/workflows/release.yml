@@ -9,6 +9,9 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
     
     steps:
     - name: Checkout code
@@ -58,13 +61,11 @@ jobs:
         echo "- Backend API: https://transport-planner-production.up.railway.app" >> CHANGELOG.md
 
     - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Transport Planner v${{ steps.version.outputs.version }}
-        body_path: CHANGELOG.md
+        tag: ${{ github.ref_name }}
+        name: Transport Planner v${{ steps.version.outputs.version }}
+        bodyFile: CHANGELOG.md
         draft: false
         prerelease: false
 
