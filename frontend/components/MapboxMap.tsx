@@ -8,7 +8,6 @@ import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 // Set your Mapbox access token
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-console.log("Mapbox Token:", process.env.NEXT_PUBLIC_MAPBOX_TOKEN ? 'Available' : 'Not Set');
 export interface Location {
   lat: number;
   lng: number;
