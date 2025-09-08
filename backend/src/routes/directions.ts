@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validateRequest, schemas } from '../middleware/validation';
-import { expensiveLimiter } from '../middleware/rateLimit';
+import { routingLimiter } from '../middleware/rateLimit';
 import mapboxService from '../services/mapbox-simple';
 import logger from '../utils/logger';
 import { APIResponse, DirectionsRequest, RouteResult } from '../types';
@@ -21,7 +21,7 @@ const router = Router();
  * - geometries: string (optional, default: 'geojson') - Geometry format
  */
 router.post('/',
-  expensiveLimiter, // Apply stricter rate limiting for routing
+  routingLimiter, // Apply routing-specific rate limiting
   validateRequest(schemas.directions),
   asyncHandler(async (req, res) => {
     const request: DirectionsRequest = req.body;
@@ -90,7 +90,7 @@ router.post('/',
  * - profiles: string[] (required) - Array of routing profiles to test
  */
 router.post('/batch',
-  expensiveLimiter,
+  routingLimiter,
   asyncHandler(async (req, res) => {
     const { start, end, profiles } = req.body;
     const requestId = req.headers['x-request-id'] as string;

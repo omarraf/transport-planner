@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validateRequest, schemas } from '../middleware/validation';
-import { expensiveLimiter } from '../middleware/rateLimit';
+import { geocodingLimiter } from '../middleware/rateLimit';
 import mapboxService from '../services/mapbox-simple';
 import logger from '../utils/logger';
 import { APIResponse, GeocodingRequest, Location } from '../types';
@@ -20,7 +20,7 @@ const router = Router();
  * - types: string[] (optional) - Filter by place types
  */
 router.post('/', 
-  expensiveLimiter, // Apply stricter rate limiting for geocoding
+  geocodingLimiter, // Apply geocoding-specific rate limiting
   validateRequest(schemas.geocoding),
   asyncHandler(async (req, res) => {
     const request: GeocodingRequest = req.body;

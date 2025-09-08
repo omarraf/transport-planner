@@ -8,7 +8,7 @@ A modern web application that helps users plan eco-friendly routes and compare d
 - **Multi-modal routing** - Compare walking, cycling, and driving routes
 - **Interactive map** - Powered by Mapbox GL JS with custom markers and route visualization
 - **Real-time directions** - Get accurate route calculations with turn-by-turn guidance
-- **Smart location search** - Intelligent geocoding with address autocompletion
+- **Smart location search** - Intelligent geocoding with autocomplete dropdown and multiple location suggestions
 
 ### 📊 Environmental Analytics
 - **Carbon emissions tracking** - Calculate CO2 footprint for each transport mode
@@ -43,11 +43,12 @@ A modern web application that helps users plan eco-friendly routes and compare d
 
 ## Usage
 
-1. **Enter locations** - Add start and destination addresses
-2. **Calculate routes** - Click "Calculate All Routes" to compare options
-3. **View results** - See distance, time, emissions, and costs for each mode
-4. **Explore map** - Interactive route visualization with custom controls
-5. **Open in Google Maps** - Click any transport method for more detailed navigation
+1. **Enter locations** - Type start and destination addresses to see autocomplete suggestions
+2. **Select locations** - Choose from multiple location options in the dropdown
+3. **Calculate routes** - Click "Calculate All Routes" to compare options
+4. **View results** - See distance, time, emissions, and costs for each mode
+5. **Explore map** - Interactive route visualization with custom controls
+6. **Open in Google Maps** - Click any transport method for more detailed navigation
 
 ## 🤝 Contributing
 
