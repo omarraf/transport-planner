@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator"
 import { MapPin, RotateCcw, Route } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import MapboxMap from "@/components/MapboxMap"
+import LocationAutocomplete from "@/components/LocationAutocomplete"
 
 // Import API functions
 import { searchLocations, calculateMultipleRoutes, compareTransportModes } from "@/lib/api"
@@ -47,55 +48,35 @@ export default function TransportPlanner() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // Real geocoding function using backend API
-  const geocodeLocation = async (address: string): Promise<Location | null> => {
-    if (!address.trim()) return null
+  // Handle location selection from autocomplete
+  const handleStartLocationSelect = (location: Location | null) => {
+    setStartLocation(location);
+  };
 
-    try {
-      const response = await searchLocations(address.trim(), { limit: 1 })
-      
-      if (response.success && response.locations.length > 0) {
-        return response.locations[0]
-      } else {
-        throw new Error(response.error || 'Location not found')
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error)
-      throw error
-    }
-  }
+  const handleEndLocationSelect = (location: Location | null) => {
+    setEndLocation(location);
+  };
 
   // Calculate routes for all transport modes
   const calculateAllRoutes = async () => {
-    // First geocode the locations if needed
-    if (!startInput.trim() || !endInput.trim()) return
+    // Check if we have valid locations selected
+    if (!startLocation || !endLocation) {
+      setError("Please select both start and end locations from the suggestions")
+      return
+    }
     
     setLoading(true)
     setError("")
     setRoutes([])
     
     try {
-      // Geocode start location
-      const startLoc = await geocodeLocation(startInput)
-      if (!startLoc) {
-        throw new Error(`Could not find start location: ${startInput}`)
-      }
-      setStartLocation(startLoc)
-      
-      // Geocode end location
-      const endLoc = await geocodeLocation(endInput)
-      if (!endLoc) {
-        throw new Error(`Could not find end location: ${endInput}`)
-      }
-      setEndLocation(endLoc)
-      
       // Get all profiles
       const profiles = transportModes.map(mode => mode.profile)
       
       // Calculate routes for all modes
       const routeResponse = await calculateMultipleRoutes(
-        startLoc,
-        endLoc,
+        startLocation,
+        endLocation,
         profiles
       )
 
@@ -228,30 +209,24 @@ export default function TransportPlanner() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Start Location</label>
-                  <Input
+                  <LocationAutocomplete
                     placeholder="Enter start location..."
                     value={startInput}
-                    onChange={(e) => setStartInput(e.target.value)}
+                    onChange={setStartInput}
+                    onLocationSelect={handleStartLocationSelect}
+                    selectedLocation={startLocation}
                   />
-                  {startLocation && (
-                    <Badge variant="secondary" className="text-xs">
-                      📍 {startLocation.name}
-                    </Badge>
-                  )}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">End Location</label>
-                  <Input
+                  <LocationAutocomplete
                     placeholder="Enter destination..."
                     value={endInput}
-                    onChange={(e) => setEndInput(e.target.value)}
+                    onChange={setEndInput}
+                    onLocationSelect={handleEndLocationSelect}
+                    selectedLocation={endLocation}
                   />
-                  {endLocation && (
-                    <Badge variant="secondary" className="text-xs">
-                      📍 {endLocation.name}
-                    </Badge>
-                  )}
                 </div>
 
                 <Separator />
@@ -259,7 +234,7 @@ export default function TransportPlanner() {
                 <div className="flex gap-2">
                   <Button
                     onClick={calculateAllRoutes}
-                    disabled={loading || !startInput.trim() || !endInput.trim()}
+                    disabled={loading || !startLocation || !endLocation}
                     className="flex-1"
                   >
                     <Route className="h-4 w-4 mr-2" />
