@@ -118,7 +118,20 @@ export async function compareTransportModes(
   };
 
   try {
-    const response = await apiClient.post('/api/metrics/compare', request);
+    const response = await apiClient.post<{
+      comparison: Array<RouteMetrics & { mode: TransportModeId }>;
+      summary: {
+        bestOption: RouteMetrics & { mode: TransportModeId };
+        worstOption: RouteMetrics & { mode: TransportModeId };
+        carbonSavings: number;
+        costSavings: number;
+        recommendations: {
+          recommended: TransportModeId[];
+          avoid: TransportModeId[];
+          message: string;
+        };
+      };
+    }>('/api/metrics/compare', request);
 
     if (response.success && response.data) {
       return {
@@ -198,7 +211,19 @@ export async function getRecommendations(distance: number): Promise<{
   error?: string;
 }> {
   try {
-    const response = await apiClient.get(`/api/metrics/recommendations/${distance}`);
+    const response = await apiClient.get<{
+      distance: number;
+      distanceKm: number;
+      recommendations: {
+        recommended: TransportModeId[];
+        avoid: TransportModeId[];
+        message: string;
+      };
+      detailedOptions: Array<{
+        mode: TransportModeId;
+        metrics: RouteMetrics;
+      }>;
+    }>(`/api/metrics/recommendations/${distance}`);
 
     if (response.success && response.data) {
       return {

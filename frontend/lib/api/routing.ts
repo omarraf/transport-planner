@@ -109,7 +109,14 @@ export async function calculateMultipleRoutes(
   };
 
   try {
-    const response = await apiClient.post('/api/directions/batch', request);
+    const response = await apiClient.post<{
+      routes: Array<{
+        profile: TransportProfile;
+        success: boolean;
+        data?: RouteResult;
+        error?: string;
+      }>;
+    }>('/api/directions/batch', request);
 
     if (response.success && response.data) {
       return {
@@ -148,7 +155,13 @@ export async function getRoutingProfiles(): Promise<{
   error?: string;
 }> {
   try {
-    const response = await apiClient.get('/api/directions/profiles');
+    const response = await apiClient.get<Array<{
+      id: string;
+      name: string;
+      description: string;
+      icon: string;
+      color: string;
+    }>>('/api/directions/profiles');
 
     if (response.success && response.data) {
       return {
