@@ -43,7 +43,7 @@ export default function MapboxMap({
   endLocation,
   route,
   selectedMode,
-  onMapClick,
+  onMapClick, // eslint-disable-line @typescript-eslint/no-unused-vars
   className = "w-full h-full"
 }: MapboxMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);

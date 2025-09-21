@@ -4,9 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, RotateCcw, Route } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -14,8 +12,8 @@ import MapboxMap from "@/components/MapboxMap"
 import LocationAutocomplete from "@/components/LocationAutocomplete"
 
 // Import API functions
-import { searchLocations, calculateMultipleRoutes, compareTransportModes } from "@/lib/api"
-import type { Location, RouteResult, RouteMetrics, TransportProfile } from "@/lib/api"
+import { calculateMultipleRoutes, compareTransportModes } from "@/lib/api"
+import type { Location, RouteResult, RouteMetrics, TransportProfile, TransportModeId } from "@/lib/api"
 
 interface TransportMode {
   id: string
@@ -101,7 +99,7 @@ export default function TransportPlanner() {
             // Calculate metrics for this route
             const metricsResponse = await compareTransportModes(
               routeData.data.distance,
-              [mode.id as any], // Type assertion
+              [mode.id as TransportModeId],
               routeData.data.duration
             )
 
@@ -115,7 +113,7 @@ export default function TransportPlanner() {
               metrics,
               success: true
             }
-          } catch (metricsError) {
+          } catch {
             return {
               mode,
               route: routeData.data,

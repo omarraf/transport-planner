@@ -8,7 +8,7 @@ export interface APIResponse<T> {
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: unknown;
   };
   meta?: {
     requestId: string;
@@ -85,7 +85,7 @@ class APIClient {
 
   async post<T>(
     endpoint: string,
-    body?: any,
+    body?: unknown,
     options?: RequestInit
   ): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {
@@ -97,7 +97,7 @@ class APIClient {
 
   async put<T>(
     endpoint: string,
-    body?: any,
+    body?: unknown,
     options?: RequestInit
   ): Promise<APIResponse<T>> {
     return this.request<T>(endpoint, {

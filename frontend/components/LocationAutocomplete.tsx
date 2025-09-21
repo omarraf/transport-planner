@@ -10,7 +10,7 @@ interface LocationAutocompleteProps {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
-  onLocationSelect: (location: Location) => void;
+  onLocationSelect: (location: Location | null) => void;
   selectedLocation: Location | null;
   className?: string;
 }
@@ -79,7 +79,7 @@ export default function LocationAutocomplete({
     
     // Clear selected location if user is typing
     if (selectedLocation && newValue !== selectedLocation.name) {
-      onLocationSelect(null as any);
+      onLocationSelect(null);
     }
     
     searchLocationsDebounced(newValue);
