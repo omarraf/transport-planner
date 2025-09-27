@@ -10,6 +10,7 @@ import { MapPin, RotateCcw, Route } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import MapboxMap from "@/components/MapboxMap"
 import LocationAutocomplete from "@/components/LocationAutocomplete"
+import { EmissionsDisplay } from "@/components/EmissionsDisplay"
 
 // Import API functions
 import { calculateMultipleRoutes, compareTransportModes } from "@/lib/api"
@@ -294,12 +295,10 @@ export default function TransportPlanner() {
                           
                           {routeData.metrics && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                <div className="text-xs font-medium text-green-800">🌱 CO2 Emissions</div>
-                                <div className="text-sm font-bold text-green-700">
-                                  {routeData.metrics.carbonEmissions.toFixed(3)} kg
-                                </div>
-                              </div>
+                              <EmissionsDisplay 
+                                emissions={routeData.metrics.carbonEmissions}
+                                mode={routeData.mode.id}
+                              />
                               
                               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div className="text-xs font-medium text-blue-800">💰 Est. Cost</div>
