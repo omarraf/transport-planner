@@ -275,4 +275,44 @@ router.get('/recommendations/:distance',
   })
 );
 
+/**
+ * GET /api/metrics/methodology/:mode
+ * Get detailed calculation methodology for a transport mode
+ */
+router.get('/methodology/:mode',
+  asyncHandler(async (req, res) => {
+    const { mode } = req.params;
+    const requestId = req.headers['x-request-id'] as string;
+
+    // Validate transport mode
+    const validModes = ['walking', 'cycling', 'driving', 'transit'];
+    if (!validModes.includes(mode)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TRANSPORT_MODE',
+          message: `Invalid transport mode: ${mode}. Must be one of: ${validModes.join(', ')}`
+        },
+        meta: {
+          requestId,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+
+    const methodology = emissionsCalculator.getCalculationMethodology(mode as any);
+
+    const response: APIResponse<typeof methodology> = {
+      success: true,
+      data: methodology,
+      meta: {
+        requestId,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    res.json(response);
+  })
+);
+
 export default router;
