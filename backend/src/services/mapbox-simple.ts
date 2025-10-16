@@ -88,7 +88,8 @@ class MapboxService {
         lat: feature.center[1],
         lng: feature.center[0],
         name: feature.place_name,
-        place_id: feature.id
+        place_id: feature.id,
+        context: feature.context
       })) || [];
 
       geocodingCacheService.set(cacheKey, locations);

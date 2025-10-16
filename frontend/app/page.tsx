@@ -56,6 +56,30 @@ export default function TransportPlanner() {
     setEndLocation(location);
   };
 
+  // Parse location context from Mapbox location data
+  const parseLocationContext = (location: Location | null): { country?: string; region?: string } | undefined => {
+    if (!location?.context || location.context.length === 0) {
+      return undefined;
+    }
+
+    let country: string | undefined;
+    let region: string | undefined;
+
+    for (const item of location.context) {
+      // Country context items have id like "country.xxx"
+      if (item.id.startsWith('country.')) {
+        country = item.short_code?.toUpperCase().replace('US-', '').replace('GB-', '') || 
+                  item.id.split('.')[1]?.substring(0, 2).toUpperCase();
+      }
+      // Region context items (states, provinces) have id like "region.xxx"
+      else if (item.id.startsWith('region.')) {
+        region = item.text;
+      }
+    }
+
+    return country ? { country, region } : undefined;
+  };
+
   // Calculate routes for all transport modes
   const calculateAllRoutes = async () => {
     // Check if we have valid locations selected
@@ -97,11 +121,15 @@ export default function TransportPlanner() {
           }
 
           try {
+            // Parse location context from start location for gas price calculation
+            const locationContext = parseLocationContext(startLocation);
+            
             // Calculate metrics for this route
             const metricsResponse = await compareTransportModes(
               routeData.data.distance,
               [mode.id as TransportModeId],
-              routeData.data.duration
+              routeData.data.duration,
+              locationContext
             )
 
             const metrics = metricsResponse.success && metricsResponse.comparison?.[0]
@@ -303,7 +331,16 @@ export default function TransportPlanner() {
                               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <div className="text-xs font-medium text-blue-800">💰 Est. Cost</div>
                                 <div className="text-sm font-bold text-blue-700">
-                                  ${routeData.metrics.estimatedCost.toFixed(2)}
+                                  {routeData.metrics.costRange && routeData.mode.id === 'driving' ? (
+                                    <>
+                                      ${routeData.metrics.costRange.min.toFixed(2)} - ${routeData.metrics.costRange.max.toFixed(2)}
+                                      <div className="text-[10px] font-normal text-blue-600 mt-0.5">
+                                        Avg: ${routeData.metrics.costRange.average.toFixed(2)}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    `$${routeData.metrics.estimatedCost.toFixed(2)}`
+                                  )}
                                 </div>
                               </div>
                               
