@@ -6,7 +6,12 @@ export type TransportModeId = 'walking' | 'cycling' | 'driving' | 'transit';
 
 export interface RouteMetrics {
   carbonEmissions: number;   // kg CO2
-  estimatedCost: number;     // in currency units
+  estimatedCost: number;     // in currency units (average for backward compatibility)
+  costRange?: {              // cost range for driving mode
+    min: number;             // minimum cost (efficient vehicles)
+    max: number;             // maximum cost (inefficient vehicles)
+    average: number;         // average cost
+  };
   calories?: number;         // for walking/cycling
   healthImpact?: string;
   environmentalRating: 'A' | 'B' | 'C' | 'D' | 'E';
@@ -21,6 +26,10 @@ export interface MetricsRequest {
   distance: number;  // in meters
   mode: TransportModeId;
   duration?: number; // in seconds
+  locationContext?: {
+    country?: string;
+    region?: string;
+  };
 }
 
 export interface TransportMode {
@@ -43,12 +52,14 @@ export interface TransportMode {
  * @param distance - Distance in meters
  * @param mode - Transport mode
  * @param duration - Optional duration in seconds
+ * @param locationContext - Optional location context for gas price calculation
  * @returns Promise with environmental metrics
  */
 export async function calculateMetrics(
   distance: number,
   mode: TransportModeId,
-  duration?: number
+  duration?: number,
+  locationContext?: { country?: string; region?: string }
 ): Promise<{
   success: boolean;
   metrics?: RouteMetrics;
@@ -57,7 +68,8 @@ export async function calculateMetrics(
   const request: MetricsRequest = {
     distance,
     mode,
-    ...(duration && { duration })
+    ...(duration && { duration }),
+    ...(locationContext && { locationContext })
   };
 
   try {
@@ -89,12 +101,14 @@ export async function calculateMetrics(
  * @param distance - Distance in meters
  * @param modes - Array of transport modes to compare
  * @param duration - Optional duration in seconds
+ * @param locationContext - Optional location context for gas price calculation
  * @returns Promise with comparison results
  */
 export async function compareTransportModes(
   distance: number,
   modes: TransportModeId[],
-  duration?: number
+  duration?: number,
+  locationContext?: { country?: string; region?: string }
 ): Promise<{
   success: boolean;
   comparison?: Array<RouteMetrics & { mode: TransportModeId }>;
@@ -114,7 +128,8 @@ export async function compareTransportModes(
   const request = {
     distance,
     modes,
-    ...(duration && { duration })
+    ...(duration && { duration }),
+    ...(locationContext && { locationContext })
   };
 
   try {

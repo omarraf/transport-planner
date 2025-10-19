@@ -3,6 +3,11 @@ export interface Location {
   lng: number;
   name: string;
   place_id?: string;
+  context?: Array<{
+    id: string;
+    text: string;
+    short_code?: string;
+  }>;
 }
 
 export interface MapboxFeature {
@@ -84,7 +89,12 @@ export interface TransportMode {
 
 export interface RouteMetrics {
   carbonEmissions: number;   // kg CO2
-  estimatedCost: number;     // in currency units
+  estimatedCost: number;     // in currency units (for backward compatibility, uses average)
+  costRange?: {              // cost range for driving mode
+    min: number;             // minimum cost (efficient vehicles)
+    max: number;             // maximum cost (inefficient vehicles)
+    average: number;         // average cost
+  };
   calories?: number;         // for walking/cycling
   healthImpact?: string;
   environmentalRating: 'A' | 'B' | 'C' | 'D' | 'E';
@@ -116,6 +126,10 @@ export interface MetricsRequest {
   distance: number;  // in meters
   mode: TransportModeId;
   duration?: number; // in seconds
+  locationContext?: {
+    country?: string;
+    region?: string;
+  };
 }
 
 export interface APIResponse<T> {

@@ -84,7 +84,7 @@ router.post('/',
  */
 router.post('/compare',
   asyncHandler(async (req, res) => {
-    const { distance, modes, duration } = req.body;
+    const { distance, modes, duration, locationContext } = req.body;
     const requestId = req.headers['x-request-id'] as string;
     
     // Validate input
@@ -113,13 +113,19 @@ router.post('/compare',
       distance,
       modes,
       duration,
+      locationContext,
       ip: req.ip
     });
 
     const startTime = Date.now();
     
     try {
-      const comparison = emissionsCalculator.compareTransportModes(distance, modes);
+      // Calculate metrics for each mode with location context
+      const comparison = modes.map(mode => ({
+        mode,
+        ...emissionsCalculator.calculateMetrics({ distance, mode, duration, locationContext })
+      })).sort((a, b) => a.carbonEmissions - b.carbonEmissions); // Sort by emissions
+
       const requestDuration = Date.now() - startTime;
 
       // Find best and worst options

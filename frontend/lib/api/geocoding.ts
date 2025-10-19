@@ -7,6 +7,11 @@ export interface Location {
   lng: number;
   name: string;
   place_id?: string;
+  context?: Array<{
+    id: string;
+    text: string;
+    short_code?: string;
+  }>;
 }
 
 export interface GeocodingRequest {

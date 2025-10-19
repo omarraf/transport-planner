@@ -1,5 +1,6 @@
 import logger from '../utils/logger';
 import { TransportModeId, RouteMetrics, TransportMode, MetricsRequest } from '../types';
+import gasPriceService from './gasPrices';
 
 // Transport mode definitions with emissions and cost factors
 // 
@@ -126,7 +127,7 @@ class EmissionsCalculatorService {
    * Calculate comprehensive route metrics including carbon emissions, cost, and health impact
    */
   calculateMetrics(request: MetricsRequest): RouteMetrics {
-    const { distance, mode } = request;
+    const { distance, mode, locationContext } = request;
     
     const transportMode = transportModes[mode];
     if (!transportMode) {
@@ -138,8 +139,8 @@ class EmissionsCalculatorService {
     // Calculate carbon emissions
     const carbonEmissions = this.calculateCarbonEmissions(distanceKm, transportMode);
     
-    // Calculate estimated cost
-    const estimatedCost = this.calculateCost(distanceKm, transportMode);
+    // Calculate estimated cost - with range for driving mode
+    const { estimatedCost, costRange } = this.calculateCost(distanceKm, transportMode, locationContext);
     
     // Calculate calories for active modes
     const calories = transportMode.caloriesFactor 
@@ -155,6 +156,7 @@ class EmissionsCalculatorService {
     const metrics: RouteMetrics = {
       carbonEmissions,
       estimatedCost,
+      costRange,
       calories,
       healthImpact,
       environmentalRating,
@@ -171,8 +173,10 @@ class EmissionsCalculatorService {
       distanceKm,
       carbonEmissions,
       estimatedCost,
+      costRange,
       environmentalRating,
-      calories
+      calories,
+      locationContext
     });
 
     return metrics;
@@ -188,10 +192,40 @@ class EmissionsCalculatorService {
 
   /**
    * Calculate estimated cost for a journey
+   * For driving mode, returns a cost range based on vehicle efficiency and regional gas prices
    */
-  private calculateCost(distanceKm: number, transportMode: TransportMode): number {
+  private calculateCost(
+    distanceKm: number, 
+    transportMode: TransportMode,
+    locationContext?: { country?: string; region?: string }
+  ): { 
+    estimatedCost: number;
+    costRange?: { min: number; max: number; average: number };
+  } {
+    // For driving mode, calculate based on actual gas prices and vehicle efficiency
+    if (transportMode.id === 'driving') {
+      const costPerKmRange = gasPriceService.getCostRange(locationContext);
+      
+      // Calculate costs for the distance
+      const minCost = distanceKm * costPerKmRange.min;
+      const maxCost = distanceKm * costPerKmRange.max;
+      const avgCost = distanceKm * costPerKmRange.average;
+      
+      return {
+        estimatedCost: Math.round(avgCost * 100) / 100, // Average for backward compatibility
+        costRange: {
+          min: Math.round(minCost * 100) / 100,
+          max: Math.round(maxCost * 100) / 100,
+          average: Math.round(avgCost * 100) / 100
+        }
+      };
+    }
+    
+    // For other modes, use the fixed cost factor
     const cost = distanceKm * transportMode.costFactor;
-    return Math.round(cost * 100) / 100; // Round to 2 decimal places
+    return {
+      estimatedCost: Math.round(cost * 100) / 100
+    };
   }
 
   /**
