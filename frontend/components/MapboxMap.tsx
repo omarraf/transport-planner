@@ -33,9 +33,10 @@ interface MapboxMapProps {
 
 const transportModeColors = {
   walking: '#22c55e',
-  cycling: '#3b82f6', 
+  cycling: '#3b82f6',
   driving: '#ef4444',
-  transit: '#8b5cf6'
+  transit: '#8b5cf6',
+  evtol: '#0ea5e9'
 };
 
 export default function MapboxMap({
@@ -177,6 +178,7 @@ export default function MapboxMap({
       });
 
       // Add route layer
+      const isAerial = selectedMode === 'evtol';
       map.current.addLayer({
         id: 'route',
         type: 'line',
@@ -187,8 +189,9 @@ export default function MapboxMap({
         },
         paint: {
           'line-color': routeColor,
-          'line-width': 4,
-          'line-opacity': 0.8
+          'line-width': isAerial ? 3 : 4,
+          'line-opacity': 0.9,
+          ...(isAerial ? { 'line-dasharray': [3, 2] } : {})
         }
       });
     }

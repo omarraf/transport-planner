@@ -73,7 +73,7 @@ export const schemas = {
   metrics: {
     body: Joi.object({
       distance: Joi.number().min(0).max(1000000).required(), // max 1000km
-      mode: Joi.string().valid('walking', 'cycling', 'driving', 'transit').required(),
+      mode: Joi.string().valid('walking', 'cycling', 'driving', 'transit', 'evtol').required(),
       duration: Joi.number().min(0).optional(),
       locationContext: Joi.object({
         country: Joi.string().max(10).optional(),

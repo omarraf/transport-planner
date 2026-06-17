@@ -291,7 +291,7 @@ router.get('/methodology/:mode',
     const requestId = req.headers['x-request-id'] as string;
 
     // Validate transport mode
-    const validModes = ['walking', 'cycling', 'driving', 'transit'];
+    const validModes = ['walking', 'cycling', 'driving', 'transit', 'evtol'];
     if (!validModes.includes(mode)) {
       return res.status(400).json({
         success: false,

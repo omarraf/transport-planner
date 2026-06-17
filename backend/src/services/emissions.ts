@@ -58,6 +58,15 @@ export const transportModes: Record<TransportModeId, TransportMode> = {
     icon: '🚌',
     emissionsFactor: 0.089, // kg CO2 per km per passenger - average bus/rail mix
     costFactor: 0.15 // average fare per km
+  },
+  evtol: {
+    id: 'evtol',
+    name: 'eVTOL Air Taxi',
+    mapboxProfile: 'mapbox/driving', // not used — straight-line routing handled client-side
+    color: '#0ea5e9',
+    icon: '✈️',
+    emissionsFactor: 0.150, // kg CO2/km per passenger: 0.39 kWh/km (NREL/Joby) × 0.386 kg CO2/kWh (US avg grid)
+    costFactor: 1.86 // ~$3/seat-mile (Joby Aviation projected pricing at scale)
   }
 };
 
@@ -119,6 +128,22 @@ export const emissionsMethodology = {
       'Minimal infrastructure requirements'
     ],
     note: 'Most sustainable transport option with additional health benefits.'
+  },
+  evtol: {
+    factor: 0.150,
+    methodology: 'Electric aircraft energy consumption per passenger on US average grid',
+    sources: [
+      'NREL & Joby Aviation (2023): 0.39 kWh/km per passenger at ~2.3 avg occupancy',
+      'US EPA (2023): US grid average 0.386 kg CO2/kWh',
+      'Joby Aviation S4 specs: 150-180 kWh battery, 200 mph cruise speed, 4-passenger capacity'
+    ],
+    factors: [
+      'Electric motor efficiency across hover, transition, and cruise phases',
+      'Average passenger occupancy rate (2.3 of 4 seats)',
+      'US electricity grid carbon intensity (varies by region)',
+      'No tailpipe emissions — footprint determined entirely by grid mix'
+    ],
+    note: 'With Joby\'s renewable energy targets, emissions could drop to ~0.021 kg CO2/km. Excludes ground transport to/from vertiport. Joby targets $3/seat-mile at scale.'
   }
 };
 
@@ -280,7 +305,12 @@ class EmissionsCalculatorService {
         } else {
           return 'For long trips, consider carpooling or public transport when possible.';
         }
-      
+
+      case 'evtol':
+        return distanceKm < 20
+          ? 'Electric air taxi — instant aerial mobility with zero direct emissions.'
+          : `Zero direct emissions and dramatically faster than ground transport. At ${Math.round(distanceKm / (322 / 60))} min flight time vs much longer on the ground.`;
+
       default:
         return 'Consider the environmental and health impacts of your transport choice.';
     }
@@ -308,7 +338,12 @@ class EmissionsCalculatorService {
       case 'transit':
         return `Shared transport emissions: ${transportMode.emissionsFactor} kg CO2/km per passenger. ` +
                `${methodology?.note || ''} Much more efficient than individual car travel.`;
-      
+
+      case 'evtol':
+        return `Electric aircraft: ${transportMode.emissionsFactor} kg CO2/km per passenger on US avg grid ` +
+               `(0.39 kWh/km × 0.386 kg CO2/kWh, NREL/Joby data). ` +
+               `${methodology?.note || ''}`;
+
       default:
         return `Emissions calculated using factor of ${transportMode.emissionsFactor} kg CO2/km based on ${methodology?.methodology || 'industry standards'}.`;
     }

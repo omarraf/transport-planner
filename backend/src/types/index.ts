@@ -74,7 +74,7 @@ export interface MapboxDirectionsResponse {
   uuid?: string;
 }
 
-export type TransportModeId = 'walking' | 'cycling' | 'driving' | 'transit';
+export type TransportModeId = 'walking' | 'cycling' | 'driving' | 'transit' | 'evtol';
 
 export interface TransportMode {
   id: TransportModeId;

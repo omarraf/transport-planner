@@ -2,7 +2,7 @@
 
 import { apiClient, APIResponse } from './client';
 
-export type TransportModeId = 'walking' | 'cycling' | 'driving' | 'transit';
+export type TransportModeId = 'walking' | 'cycling' | 'driving' | 'transit' | 'evtol';
 
 export interface RouteMetrics {
   carbonEmissions: number;   // kg CO2
