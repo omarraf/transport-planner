@@ -30,7 +30,7 @@ const transportModes: TransportMode[] = [
   { id: "cycling", name: "Cycling", icon: "🚴", color: "#3b82f6", profile: "mapbox/cycling" },
   { id: "driving", name: "Driving", icon: "🚗", color: "#ef4444", profile: "mapbox/driving" },
   { id: "transit", name: "Bus / Transit", icon: "🚌", color: "#8b5cf6", profile: "mapbox/driving" },
-  { id: "evtol", name: "Joby eVTOL", icon: "✈️", color: "#0ea5e9", profile: "mapbox/driving", isAerial: true },
+  { id: "evtol", name: "eVTOL Air Taxi", icon: "✈️", color: "#0ea5e9", profile: "mapbox/driving", isAerial: true },
 ]
 
 const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
