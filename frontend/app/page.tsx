@@ -108,7 +108,6 @@ export default function TransportPlanner() {
     try {
       const locationContext = parseLocationContext(startLocation)
       const groundModes = transportModes.filter(m => !m.isAerial)
-      const aerialModes = transportModes.filter(m => m.isAerial)
 
       // Ground routes via Mapbox
       const profiles = groundModes.map(m => m.profile)

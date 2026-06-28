@@ -13,7 +13,7 @@ interface EmissionsDisplayProps {
 
 export function EmissionsDisplay({ emissions, mode, className = "" }: EmissionsDisplayProps) {
   const [methodology, setMethodology] = useState<EmissionsMethodology | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchMethodology = async () => {

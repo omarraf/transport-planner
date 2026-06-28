@@ -5,6 +5,16 @@ import { SearchBox } from '@mapbox/search-js-react';
 import type { SearchBoxRetrieveResponse } from '@mapbox/search-js-core';
 import type { Location } from "@/lib/api";
 
+interface SearchBoxProperties {
+  name?: string;
+  place_formatted?: string;
+  mapbox_id?: string;
+  context?: {
+    country?: { name?: string; country_code?: string };
+    region?: { name?: string; region_code?: string };
+  };
+}
+
 interface LocationAutocompleteProps {
   placeholder: string;
   value: string;
@@ -30,7 +40,7 @@ export default function LocationAutocomplete({
     if (!feature) return;
 
     const [lng, lat] = feature.geometry.coordinates as [number, number];
-    const props = feature.properties as any;
+    const props = feature.properties as SearchBoxProperties;
     const ctx = props.context ?? {};
 
     const context: Location['context'] = [];
