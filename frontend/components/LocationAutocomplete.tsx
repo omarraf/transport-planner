@@ -32,6 +32,26 @@ export default function LocationAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
+  const userLocationRef = useRef<[number, number] | undefined>(undefined);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userLocationRef.current = [pos.coords.longitude, pos.coords.latitude];
+        },
+        () => {}
+      );
+    }
+  }, []);
+
+  // Expand likely IATA airport codes (3 alpha chars) to improve Mapbox ranking
+  const preprocessQuery = (query: string): string => {
+    if (/^[A-Za-z]{3}$/.test(query)) {
+      return `${query.toUpperCase()} airport`;
+    }
+    return query;
+  };
 
   // Debounced search function
   const searchLocationsDebounced = async (query: string) => {
@@ -50,7 +70,10 @@ export default function LocationAutocomplete({
       setError("");
 
       try {
-        const response = await searchLocations(query.trim(), { limit: 5 });
+        const response = await searchLocations(preprocessQuery(query.trim()), {
+          limit: 5,
+          proximity: userLocationRef.current,
+        });
         
         if (response.success && response.locations.length > 0) {
           setSuggestions(response.locations);

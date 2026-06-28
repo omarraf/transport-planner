@@ -38,12 +38,14 @@ class MapboxService {
     }
 
     try {
+      const defaultTypes = 'poi,place,locality,neighborhood,address,region,country';
       const params = new URLSearchParams({
         access_token: this.accessToken,
         limit: limit.toString(),
+        language: 'en',
+        types: types ? types.join(',') : defaultTypes,
         ...(proximity && { proximity: proximity.join(',') }),
         ...(bbox && { bbox: bbox.join(',') }),
-        ...(types && { types: types.join(',') })
       });
 
       const url = `${this.baseUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params}`;
