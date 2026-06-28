@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { MapPin, RotateCcw, Route } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import dynamic from "next/dynamic"
 import MapboxMap from "@/components/MapboxMap"
-import LocationAutocomplete from "@/components/LocationAutocomplete"
+const LocationAutocomplete = dynamic(() => import("@/components/LocationAutocomplete"), { ssr: false })
 import { EmissionsDisplay } from "@/components/EmissionsDisplay"
 
 // Import API functions
