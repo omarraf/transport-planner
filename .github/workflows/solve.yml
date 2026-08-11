@@ -1,0 +1,65 @@
+name: ticket-to-pr
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+concurrency:
+  # One run per issue at a time -- replaces a queue + dedup index.
+  group: solve-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  solve:
+    # Only issues (not PRs), only /solve comments, only humans, only
+    # owners/collaborators (write access).
+    if: >-
+      github.event.issue.pull_request == null
+      && startsWith(github.event.comment.body, '/solve')
+      && github.event.comment.user.type != 'Bot'
+      && (github.event.comment.author_association == 'OWNER'
+          || github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      # 1) Target repo -- only to read the per-repo config.
+      - uses: actions/checkout@v4
+
+      # 2) The ticket-to-pr tool from its own repo.
+      - uses: actions/checkout@v4
+        with:
+          repository: omarraf/coding-harness   # your tool repo
+          ref: main                            # pin to a tag/SHA when stable
+          path: ticket-to-pr
+          # token: ${{ secrets.GH_PAT }}        # uncomment if the tool repo is private
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ticket-to-pr/package-lock.json
+
+      - name: Build ticket-to-pr
+        working-directory: ticket-to-pr
+        run: npm ci && npm run build
+
+      - name: Post ack
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue comment "$NUMBER" --repo "$REPO" --body "ticket-to-pr is working on this issue — I'll post the PR link when it's ready."
+
+      - name: Run ticket-to-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}    # PAT, not the Actions token
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}  # direct, reachable from runner
+          DATA_DIR: ./var
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          node ticket-to-pr/dist/cli.js run "$ISSUE_URL" --config .ticket-to-pr/agent.yaml
