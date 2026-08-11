@@ -1,3 +1,8 @@
+# Drop into the TARGET repo (transport-planner) at:
+#   .github/workflows/solve.yml
+# Comment /solve on an issue -> ticket-to-pr opens a PR. GitHub Actions is
+# listener+queue+worker -- no server.
+# Needs repo secrets: GH_PAT, LITELLM_BASE_URL, LITELLM_API_KEY, LITELLM_MODEL.
 name: ticket-to-pr
 
 on:
@@ -57,8 +62,10 @@ jobs:
 
       - name: Run ticket-to-pr
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}    # PAT, not the Actions token
-          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}  # direct, reachable from runner
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}          # PAT, not the Actions token
+          LITELLM_BASE_URL: ${{ secrets.LITELLM_BASE_URL }}  # public proxy, e.g. https://llaminar.joby.aero/v1
+          LITELLM_API_KEY: ${{ secrets.LITELLM_API_KEY }}    # your LiteLLM virtual key
+          LITELLM_MODEL: ${{ secrets.LITELLM_MODEL }}       # a model_name in your proxy's model_list (e.g. glm-5.2)
           DATA_DIR: ./var
           ISSUE_URL: ${{ github.event.issue.html_url }}
         run: |
