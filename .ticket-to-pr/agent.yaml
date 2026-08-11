@@ -1,19 +1,21 @@
 # Per-repo config for ticket-to-pr.
 #
-# Drop this into the TARGET repo at:
+# Drop into the TARGET repo (transport-planner) at:
 #   .ticket-to-pr/agent.yaml
 #
-# The workflow (examples/github-actions/solve.yml) reads it via
+# The workflow (.github/workflows/solve.yml) reads it via
 # `--config .ticket-to-pr/agent.yaml`. Edit this file to change the model,
-# budget, checks, or protected paths for THIS repo — no tool changes needed.
+# budget, checks, or protected paths for THIS repo -- no tool changes needed.
 #
-# Model: zai/glm-5.2 direct (Z.AI/Zhipu public endpoint, reachable from a
-# GitHub Actions runner). Requires the ZAI_API_KEY secret. Do NOT use the
-# litellm/ provider here — your LiteLLM proxy is on localhost and GitHub's
-# runners can't reach it.
+# Model: litellm/glm-5.2 routed through your LiteLLM proxy (LITELLM_BASE_URL).
+# The proxy URL + key + model_name come from repo secrets (LITELLM_BASE_URL,
+# LITELLM_API_KEY, LITELLM_MODEL). The model id here MUST match the
+# LITELLM_MODEL secret value (a model_name in your proxy's model_list).
+# GLM-5.2 reasoning compat (thinkingFormat "zai", zaiToolStream, 1M ctx) is
+# applied automatically from the model id -- see src/runner/litellm.ts.
 version: 1
 defaults:
-  model: zai/glm-5.2
+  model: litellm/glm-5.2
   thinkingLevel: medium
   triggerLabel: agent
   budget:
@@ -23,7 +25,7 @@ defaults:
   draftPrOnFailure: true
 repos:
   # transport-planner: two-package (backend + frontend) TypeScript repo.
-  # HTTPS remote → clone + push both use GITHUB_TOKEN (the PAT), no SSH needed.
+  # HTTPS remote -> clone + push both use GITHUB_TOKEN (the PAT), no SSH needed.
   # backend has no test files, so the hard gate is `tsc` (build); lint is
   # non-blocking. frontend deps are installed so the agent can work in either
   # package; drop the frontend `setup` line for backend-only issues to go faster.
