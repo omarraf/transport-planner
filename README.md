@@ -50,6 +50,23 @@ A modern web application that helps users plan eco-friendly routes and compare d
 5. **Explore map** - Interactive route visualization with custom controls
 6. **Open in Google Maps** - Click any transport method for more detailed navigation
 
+## 🧪 Testing
+
+Testing is currently in progress. The project is rolling out a test suite to ensure reliability across the backend services and API routes.
+
+### Backend
+- **Framework:** [Jest](https://jestjs.io/) is configured as the test runner for the Node.js/Express backend.
+- **Status:** In progress — unit and integration tests are being written for the routing, geocoding, emissions, and caching services.
+- **Run tests:**
+  ```bash
+  npm --prefix backend test
+  ```
+
+### Frontend
+- **Status:** In progress — component and integration test coverage is being planned and added.
+
+> Note: The test suite is under active development, so coverage may be limited until the rollout is complete.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
