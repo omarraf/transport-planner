@@ -40,7 +40,7 @@ jobs:
           repository: omarraf/coding-harness   # your tool repo
           ref: main                            # pin to a tag/SHA when stable
           path: ticket-to-pr
-          # token: ${{ secrets.GH_PAT }}        # uncomment if the tool repo is private
+          token: ${{ secrets.GH_PAT }}        # uncomment if the tool repo is private
 
       - uses: actions/setup-node@v4
         with:
