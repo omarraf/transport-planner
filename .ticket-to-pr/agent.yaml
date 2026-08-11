@@ -1,0 +1,44 @@
+# Per-repo config for ticket-to-pr.
+#
+# Drop this into the TARGET repo at:
+#   .ticket-to-pr/agent.yaml
+#
+# The workflow (examples/github-actions/solve.yml) reads it via
+# `--config .ticket-to-pr/agent.yaml`. Edit this file to change the model,
+# budget, checks, or protected paths for THIS repo — no tool changes needed.
+#
+# Model: zai/glm-5.2 direct (Z.AI/Zhipu public endpoint, reachable from a
+# GitHub Actions runner). Requires the ZAI_API_KEY secret. Do NOT use the
+# litellm/ provider here — your LiteLLM proxy is on localhost and GitHub's
+# runners can't reach it.
+version: 1
+defaults:
+  model: zai/glm-5.2
+  thinkingLevel: medium
+  triggerLabel: agent
+  budget:
+    maxUsd: 5
+    maxWallClockMinutes: 25
+    maxTurns: 80
+  draftPrOnFailure: true
+repos:
+  # transport-planner: two-package (backend + frontend) TypeScript repo.
+  # HTTPS remote → clone + push both use GITHUB_TOKEN (the PAT), no SSH needed.
+  # backend has no test files, so the hard gate is `tsc` (build); lint is
+  # non-blocking. frontend deps are installed so the agent can work in either
+  # package; drop the frontend `setup` line for backend-only issues to go faster.
+  - id: omarraf/transport-planner
+    remote: https://github.com/omarraf/transport-planner.git
+    baseBranch: main
+    branchPrefix: agent/
+    setup:
+      - npm --prefix backend ci
+      - npm --prefix frontend ci
+    checks:
+      - { name: backend-typecheck, cmd: "npm --prefix backend run build", required: true,  timeoutSec: 300 }
+      - { name: backend-lint,      cmd: "npm --prefix backend run lint",  required: false, timeoutSec: 180 }
+    protectedPaths:
+      - ".github/workflows/**"
+    prLabels:
+      - agent-authored
+    safeEnv: []
